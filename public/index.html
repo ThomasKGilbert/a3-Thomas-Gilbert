@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <title>CS4241 Assignment 2</title>
+    <meta charset='utf-8' />
+    <script src='js/main.js' defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href='css/main.css' />
+    
+    <!-- get rid of favicon error -->
+    <link rel='icon' href='data:;base64,iVBORw0KGgo=' />
+  </head>
+  <body>
+<!--    <form>-->
+<!--      <input type='text' id='yourname' value='your name here'>-->
+<!--      <button>submit</button>-->
+<!--    </form>-->
+    <!-- Out-Most Container -->
+    <div class='container'>
+      <div class='todo-card'>
+        <h1>To-Do List</h1>
+
+        <div id="todo-row">
+          <input type="text" id="task-text" name="task" placeholder="Enter task">
+          <select id="priority" name="priority">
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+          <button onclick="addTask()" id="add-task">Add Task</button>
+        </div>
+
+        <ul id="task-list-container">
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
