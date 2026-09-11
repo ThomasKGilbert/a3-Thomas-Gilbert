@@ -7,9 +7,10 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "mime": "^2.4.4"
   },
   "engines": {
-     "node":"24.x"
+    "node": "24.x"
   }
 }
