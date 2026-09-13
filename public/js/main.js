@@ -12,14 +12,14 @@ inputText.addEventListener("keypress", function(event) {
 
 taskListContainer.addEventListener("click", function(event) {
   if(event.target.classList.contains("delete-btn")) {
-    const id = Number(event.target.dataset.id);
+    const id = event.target.dataset.id;
     deleteTask(id);
   }
 });
 
 taskListContainer.addEventListener("change", function(event) {
   if(event.target.matches('input[type="checkbox"]')) {
-    const id = Number(event.target.dataset.id);
+    const id = event.target.dataset.id;
     toggleTask(id);
   }
 })
@@ -103,14 +103,14 @@ function renderTaskList(todoList) {
 
   todoList.forEach(task => {
     let li = document.createElement("li");
-    li.dataset.id = task.id;
+    li.dataset.id = task._id;
     li.innerHTML = `
 <div class="task-section">
-<input type="checkbox" id="task-${task.id}" data-id="${task.id}" ${task.done ? "checked" : ""} />
-<label for="task-${task.id}">${task.task}</label>
+<input type="checkbox" id="task-${task._id}" data-id="${task._id}" ${task.done ? "checked" : ""} />
+<label for="task-${task._id}">${task.task}</label>
 <span class="deadline">Due: ${task.deadline}</span>
 </div>
-<button class="delete-btn" data-id="${task.id}">Delete</button>
+<button class="delete-btn" data-id="${task._id}">Delete</button>
 `;
 
     taskListContainer.appendChild(li);

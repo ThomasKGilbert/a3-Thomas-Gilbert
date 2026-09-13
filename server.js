@@ -1,39 +1,53 @@
+require('dotenv').config()
+
 const express = require('express');
+const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use(express.static('public'));
 
-const appdata = []
+const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@${process.env.HOST}`
+// check for sanity
+console.log( 'uri:', uri )
+const client = new MongoClient( uri )
 
-app.get('/task-lists', (req, res) => {
-  res.json(appdata)
+let collection = null
+
+async function run() {
+  await client.connect()
+  collection = await client.db('todo_db').collection('todos');
+}
+
+run()
+
+app.get('/task-list', async (req, res) => {
+  const tasks  = await collection.find({}).toArray();
+  res.json(tasks)
 })
 
-app.post('/add-task', (req, res) => {
+app.post('/add-task', async (req, res) => {
   const enhancedTask = addDerivedField( req.body )
-  enhancedTask.id = appdata.length ? Math.max(...appdata.map(task => task.id)) + 1 : 1 // I hate Math.max() :(
-  appdata.push( enhancedTask )
-  res.json(appdata)
+  await collection.insertOne(enhancedTask);
+  const tasks  = await collection.find({}).toArray();
+  res.json(tasks)
 })
 
-app.post('/delete-task', (req, res) => {
-  const index = appdata.findIndex( task => task.id === req.body.id )
-  if( index !== -1 ) {
-    console.log( "Deleting Task ", appdata[index] )
-    appdata.splice(index, 1)
-  }
-  res.json(appdata)
+app.post('/delete-task', async (req, res) => {
+  await collection.deleteOne({_id: new ObjectId(req.body.id)})
+  const tasks  = await collection.find({}).toArray();
+  res.json(tasks)
 })
 
-app.post('toggle-task', (req, res) => {
-  const task = appdata.find( task => task.id === req.body.id )
+app.post('/toggle-task', async (req, res) => {
+  const task = await collection.findOne({_id: new ObjectId(req.body.id)})
   if ( task ) {
-    task.done = !task.done
+    await collection.updateOne({_id: new ObjectId(req.body.id)}, {$set: {done: !task.done}} )
     console.log( "Toggled Task ", task )
   }
-  res.json(appdata)
+  const tasks  = await collection.find({}).toArray();
+  res.json(tasks)
 })
 
 const addDerivedField = function( newTask ) {
