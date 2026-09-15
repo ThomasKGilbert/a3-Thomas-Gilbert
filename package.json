@@ -4,7 +4,9 @@
   "description": "A todo app with add, delete, and toggle functionality",
   "author": "Thomas Gilbert",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/style.css",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./public/style.css --watch"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
@@ -14,5 +16,9 @@
   },
   "engines": {
     "node": "24.x"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
   }
 }

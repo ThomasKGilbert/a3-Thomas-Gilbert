@@ -104,13 +104,14 @@ function renderTaskList(todoList) {
   todoList.forEach(task => {
     let li = document.createElement("li");
     li.dataset.id = task._id;
+    li.className = "flex items-center justify-between py-2";
     li.innerHTML = `
-<div class="task-section">
-<input type="checkbox" id="task-${task._id}" data-id="${task._id}" ${task.done ? "checked" : ""} />
-<label for="task-${task._id}">${task.task}</label>
-<span class="deadline">Due: ${task.deadline}</span>
+<div class="flex items-center gap-2">
+<input type="checkbox" id="task-${task._id}" data-id="${task._id}" ${task.done ? "checked" : ""} class="peer w-5 h-5 accent-orange-400 cursor-pointer m-0" />
+<label for="task-${task._id}" class="peer-checked:line-through peer-checked:text-gray-400 ">${task.task}</label>
+<span class="text-gray-500 text-sm ml-2">Due: ${task.deadline}</span>
 </div>
-<button class="delete-btn" data-id="${task._id}">Delete</button>
+<button class="delete-btn w-full max-w-17.5 rounded-lg border-none bg-orange-400 cursor-pointer p-1.5" data-id="${task._id}">Delete</button>
 `;
 
     taskListContainer.appendChild(li);
