@@ -9,8 +9,10 @@
     "watch:css": "tailwindcss -i ./src/input.css -o ./public/style.css --watch"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "mime": "^2.4.4",
     "mongodb": "^7.6.0"
   },
