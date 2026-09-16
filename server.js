@@ -14,7 +14,6 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 },
 }))
-app.use(express.static('public'));
 
 const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@${process.env.HOST}`
 // check for sanity
@@ -27,7 +26,7 @@ let tasksCollection = null
 async function run() {
   await client.connect()
   const db = client.db('todo_db')
-  taskscollection = db.collection('tasks');
+  tasksCollection = db.collection('tasks');
   usersCollection = db.collection('users');
 }
 
@@ -40,8 +39,10 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html')
 })
 
+app.use(express.static('public', {index: false}));
+
 app.get('/task-list', requireLogin, async (req, res) => {
-  const tasks  = await taskscollection.find({}).toArray();
+  const tasks  = await tasksCollection.find({userId: req.session.userId}).toArray();
   res.json(tasks)
 })
 
@@ -55,15 +56,15 @@ app.post('/login', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
     const result = await usersCollection.insertOne({username, password: hashedPassword})
 
-    req.session.userId = result.insertId
+    req.session.userId = result.insertedId
     req.session.username = username
 
     return res.json({success: true, newAccount: true})
   }
 
-  const passworkdMatch = await bcrypt.compare(password, userExists.password)
+  const passwordMatch = await bcrypt.compare(password, userExists.password)
 
-  if(!passworkdMatch) {
+  if(!passwordMatch) {
     return res.status(401).json({success: false, message: 'Incorrect password' })
   }
 
@@ -72,7 +73,7 @@ app.post('/login', async (req, res) => {
   res.json({success: true, newAccount: false})
 })
 
-app.post('logout', (req, res) => {
+app.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.json({success: true})
   })
@@ -80,24 +81,25 @@ app.post('logout', (req, res) => {
 
 app.post('/add-task', requireLogin, async (req, res) => {
   const enhancedTask = addDerivedField( req.body )
-  await taskscollection.insertOne(enhancedTask);
-  const tasks  = await taskscollection.find({}).toArray();
+  enhancedTask.userId = req.session.userId
+  await tasksCollection.insertOne(enhancedTask);
+  const tasks  = await tasksCollection.find({userId: req.session.userId}).toArray();
   res.json(tasks)
 })
 
-app.post('/delete-task', async (req, res) => {
-  await taskscollection.deleteOne({_id: new ObjectId(req.body.id), userId: req.session.userId})
-  const tasks  = await taskscollection.find({}).toArray();
+app.post('/delete-task', requireLogin, async (req, res) => {
+  await tasksCollection.deleteOne({_id: new ObjectId(req.body.id), userId: req.session.userId})
+  const tasks  = await tasksCollection.find({userId: req.session.userId}).toArray();
   res.json(tasks)
 })
 
-app.post('/toggle-task', async (req, res) => {
-  const task = await taskscollection.findOne({_id: new ObjectId(req.body.id)})
+app.post('/toggle-task', requireLogin, async (req, res) => {
+  const task = await tasksCollection.findOne({_id: new ObjectId(req.body.id), userId: req.session.userId})
   if ( task ) {
-    await taskscollection.updateOne({_id: new ObjectId(req.body.id)}, {$set: {done: !task.done}} )
+    await tasksCollection.updateOne({_id: new ObjectId(req.body.id), userId: req.session.userId}, {$set: {done: !task.done}} )
     console.log( "Toggled Task ", task )
   }
-  const tasks  = await taskscollection.find({}).toArray();
+  const tasks  = await tasksCollection.find({userId: req.session.userId}).toArray();
   res.json(tasks)
 })
 
