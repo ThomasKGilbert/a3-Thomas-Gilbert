@@ -87,6 +87,32 @@ app.post('/add-task', requireLogin, async (req, res) => {
   res.json(tasks)
 })
 
+app.post('/edit-task', requireLogin, async (req, res) => {
+  const { id, task, priority } = req.body
+
+  const existingTask = await tasksCollection.findOne({_id: new ObjectId(id), userId: req.session.userId})
+
+  if(!existingTask) {
+    return res.status(404).json({message: 'Task not found'})
+  }
+
+  const daysTillDeadline = priority === 'high' ? 1 : priority === 'medium' ? 3 : 6
+
+  const dateCreated = new Date( existingTask.creationDate )
+  const deadlineDate = new Date( dateCreated )
+  deadlineDate.setDate( dateCreated.getDate() + daysTillDeadline )
+
+  await tasksCollection.updateOne(
+      { _id: new ObjectId(id), userId: req.session.userId },
+      { $set: {
+        task, priority, deadline: deadlineDate.toISOString().split('T')[0]
+        }}
+  )
+
+  const tasks = await tasksCollection.find({userId: req.session.userId}).toArray()
+  res.json(tasks)
+})
+
 app.post('/delete-task', requireLogin, async (req, res) => {
   await tasksCollection.deleteOne({_id: new ObjectId(req.body.id), userId: req.session.userId})
   const tasks  = await tasksCollection.find({userId: req.session.userId}).toArray();

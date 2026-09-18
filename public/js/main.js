@@ -15,6 +15,10 @@ taskListContainer.addEventListener("click", function(event) {
     const id = event.target.dataset.id;
     deleteTask(id);
   }
+  else if(event.target.classList.contains("edit-btn")) {
+    const id = event.target.dataset.id;
+    editTask(id);
+  }
 });
 
 taskListContainer.addEventListener("change", function(event) {
@@ -78,6 +82,38 @@ async function deleteTask(id) {
   }
 }
 
+async function editTask(id) {
+  const newText = prompt("Please edit task text:");
+  if(newText === null || newText.trim() === "") {
+    return
+  }
+
+  const newPriority = prompt("Please edit priority (high/medium/low):");
+  if(!['high', 'medium', 'low'].includes(newPriority)){
+    alert("Priority can be high, medium, or low")
+    return
+  }
+
+  try{
+    const response = await fetch("/edit-task", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({id, task: newText, priority: newPriority}),
+    })
+
+    if(response.ok){
+      const updatedTodoList = await response.json();
+      renderTaskList(updatedTodoList);
+    }
+    else{
+      console.error("Server Error: ", response.statusText);
+    }
+  }
+  catch(e){
+    console.error("Failed to edit task: ", e);
+  }
+}
+
 async function toggleTask(id) {
   try {
     const response = await fetch("/toggle-task", {
@@ -111,7 +147,10 @@ function renderTaskList(todoList) {
 <label for="task-${task._id}" class="peer-checked:line-through peer-checked:text-gray-400 ">${task.task}</label>
 <span class="text-gray-500 text-sm ml-2">Due: ${task.deadline}</span>
 </div>
+<div class="flex gap-2">
+<button class="edit-btn rounded-lg border-none bg-blue-400 cursor-pointer p-1.5 px-3" data-id="${task._id}">Edit</button>
 <button class="delete-btn w-full max-w-17.5 rounded-lg border-none bg-orange-400 cursor-pointer p-1.5" data-id="${task._id}">Delete</button>
+</div>
 `;
 
     taskListContainer.appendChild(li);
